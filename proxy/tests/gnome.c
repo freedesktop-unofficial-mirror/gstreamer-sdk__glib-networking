@@ -13,9 +13,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+ * Public License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 #include <gio/gio.h>
@@ -52,6 +51,7 @@ static const char *ignore_hosts[] = {
   "ddd.xx",
   "*.eee.xx:8000",
   "127.0.0.0/24",
+  "10.0.0.1:8000",
   "::1",
   "fe80::/10"
 };
@@ -96,6 +96,8 @@ static const struct {
   { "http://127.0.0.2/",       	 "direct://" },
   { "http://127.0.0.255/",     	 "direct://" },
   { "http://127.0.1.0/",       	 "http://localhost:8080" },
+  { "http://10.0.0.1/",        	 "http://localhost:8080" },
+  { "http://10.0.0.1:8000/",   	 "direct://" },
   { "http://[::1]/",           	 "direct://" },
   { "http://[::1]:80/",        	 "direct://" },
   { "http://[::1:1]/",         	 "http://localhost:8080" },

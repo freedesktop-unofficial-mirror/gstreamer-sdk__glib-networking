@@ -1,15 +1,15 @@
 AC_PREREQ(2.65)
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_INIT([glib-networking],[2.30.2],[http://bugzilla.gnome.org/enter_bug.cgi?product=glib&component=network])
+AC_INIT([glib-networking],[2.32.3],[http://bugzilla.gnome.org/enter_bug.cgi?product=glib&component=network])
 
 AC_CONFIG_SRCDIR([proxy/libproxy/glibproxyresolver.h])
 AC_CONFIG_HEADERS([config.h])
 
 dnl Other initialization
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz -Wno-portability])
 AM_MAINTAINER_MODE([enable])
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],)
+AM_SILENT_RULES([yes])
 LT_INIT
 
 dnl Checks for programs.
@@ -33,7 +33,7 @@ AM_GLIB_GNU_GETTEXT
 dnl *****************************
 dnl *** Check GLib GIO        ***
 dnl *****************************
-AM_PATH_GLIB_2_0(2.29.18,,AC_MSG_ERROR(GLIB not found),gio)
+AM_PATH_GLIB_2_0(2.31.6,,AC_MSG_ERROR(GLIB not found),gio)
 
 GIO_MODULE_DIR=$($PKG_CONFIG --variable giomoduledir gio-2.0)
 AS_IF([test "x$GIO_MODULE_DIR" = "x"],
@@ -80,18 +80,23 @@ AC_SUBST(GSETTINGS_DESKTOP_SCHEMAS_CFLAGS)
 dnl *****************************
 dnl *** Checks for GNUTLS     ***
 dnl *****************************
+
+GNUTLS_MIN_REQUIRED=2.11.0
+GNUTLS_MIN_PKCS11=2.12.8
+
 AC_ARG_WITH(gnutls,
     [AC_HELP_STRING([--with-gnutls],
                     [support for GNUTLS @<:@default=yes@:>@])],
     [],
     [with_gnutls=yes])
-AS_IF([test "x$with_gnutls" != "xno"],
-    [PKG_CHECK_MODULES(GNUTLS, [gnutls >= 2.1.7],
-        [with_gnutls=yes
-	 tls_support=gnutls
-	 AM_PATH_LIBGCRYPT([])],
-        [AS_IF([test "x$with_gnutls" = "xyes"],
-               [AC_MSG_FAILURE("$GNUTLS_PKG_ERRORS")])])])
+if test "x$with_gnutls" != "xno"; then
+	PKG_CHECK_MODULES(GNUTLS,
+	                  [gnutls >= $GNUTLS_MIN_REQUIRED],
+	                  [with_gnutls=yes
+	                   tls_support="${tls_support}gnutls "],
+	                  [AS_IF([test "x$with_gnutls" = "xyes"],
+	                         [AC_MSG_FAILURE("$GNUTLS_PKG_ERRORS")])])
+fi
 AM_CONDITIONAL(HAVE_GNUTLS, [test "x$with_gnutls" = "xyes"])
 AC_SUBST(GNUTLS_CFLAGS)
 AC_SUBST(GNUTLS_LIBS)
@@ -106,7 +111,8 @@ if test "x$with_gnutls" = "xyes"; then
     else
         if test -z "$with_ca_certificates"; then
 	    for f in /etc/pki/tls/certs/ca-bundle.crt \
-	       	     /etc/ssl/certs/ca-certificates.crt; do
+	       	     /etc/ssl/certs/ca-certificates.crt \
+		     /etc/ssl/ca-bundle.pem; do
 		if test -f "$f"; then
 		    with_ca_certificates="$f"
 		fi
@@ -121,34 +127,33 @@ if test "x$with_gnutls" = "xyes"; then
     fi
 fi
 
-dnl *************************************
-dnl *** Warnings to show if using GCC ***
-dnl *************************************
+dnl *****************************
+dnl *** Checks for pkcs11    ***
+dnl *****************************
 
-AC_ARG_ENABLE(more-warnings,
-	      AS_HELP_STRING([--disable-more-warnings], [Inhibit compiler warnings]),
-	      set_more_warnings=no)
+P11_KIT_REQUIRED=0.8
 
-if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
-	CFLAGS="$CFLAGS \
-		-Wall -Wstrict-prototypes -Wmissing-declarations \
-		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
-		-Wdeclaration-after-statement -Wformat=2 -Winit-self \
-		-Waggregate-return -Wmissing-format-attribute"
-
-	for option in -Wmissing-include-dirs -Wundef; do
-		SAVE_CFLAGS="$CFLAGS"
-		CFLAGS="$CFLAGS $option"
-		AC_MSG_CHECKING([whether gcc understands $option])
-		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
-				  [has_option=yes],
-				  [has_option=no])
-		AC_MSG_RESULT($has_option)
-		if test $has_option = no; then
-			CFLAGS="$SAVE_CFLAGS"
-		fi
-	done
+AC_ARG_WITH(pkcs11,
+	[AC_HELP_STRING([--with-pkcs11],
+	                [support for pkcs11 @<:@default=check@:>@])],
+	                [],
+	                [with_pkcs11=check])
+if test "x$with_pkcs11" != "xno"; then
+	PKG_CHECK_MODULES(PKCS11,
+	                  [p11-kit-1 >= $P11_KIT_REQUIRED gnutls >= $GNUTLS_MIN_PKCS11],
+	                  [with_pkcs11=yes
+	                   pkcs11_support=p11-kit
+	                   tls_support="${tls_support}gnutls-pkcs11 "
+	                   AC_DEFINE_UNQUOTED([HAVE_PKCS11], [1], [Building with PKCS#11 support])],
+	                  [AS_IF([test "x$with_pkcs11" = "xyes"],
+	                         [AC_MSG_FAILURE("$PKCS11_PKG_ERRORS")])
+	                   pkcs11_support=no])
+else
+	pkcs11_support=no
 fi
+AM_CONDITIONAL(HAVE_PKCS11, [test "x$with_pkcs11" = "xyes"])
+AC_SUBST(PKCS11_CFLAGS)
+AC_SUBST(PKCS11_LIBS)
 
 dnl ************************************
 dnl *** Enable lcov coverage reports ***
@@ -208,6 +213,24 @@ if test "x$use_gcov" = "xyes"; then
   LDFLAGS="$LDFLAGS -lgcov"
 fi
 
+dnl ****************************************************
+dnl *** Warnings to show if using GCC                ***
+dnl *** (do this last so -Werror won't mess up tests ***
+dnl ****************************************************
+
+AC_ARG_ENABLE(more-warnings,
+	      AS_HELP_STRING([--disable-more-warnings], [Inhibit compiler warnings]),
+	      set_more_warnings=no)
+
+if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
+	CFLAGS="$CFLAGS \
+		-Wall -Wstrict-prototypes -Werror=missing-prototypes \
+		-Werror=implicit-function-declaration \
+		-Werror=pointer-arith -Werror=init-self -Werror=format=2 \
+		-Werror=missing-include-dirs \
+		-Werror=declaration-after-statement"
+fi
+
 dnl *****************************
 dnl *** done                  ***
 dnl *****************************
@@ -217,15 +240,17 @@ AC_CONFIG_FILES([Makefile
                  proxy/gnome/Makefile
                  proxy/tests/Makefile
                  tls/gnutls/Makefile
+                 tls/pkcs11/Makefile
                  tls/tests/Makefile
                 ])
 AC_OUTPUT
 
 echo ""
-echo "  Proxy support: ${proxy_support:-no}"
-echo "  TLS support:   ${tls_support:-no}"
+echo     "  Proxy support:     ${proxy_support:-no}"
+echo     "  TLS support:       ${tls_support:-no}"
 if test "$tls_support" != "no"; then
-    echo "  TLS CA file:   ${with_ca_certificates:-(none)}"
+    echo "  PKCS#11 Support:   $pkcs11_support"
+    echo "  TLS CA file:       ${with_ca_certificates:-(none)}"
     if test -n "$with_ca_certificates"; then
 	if ! test -f "$with_ca_certificates"; then
 	    AC_MSG_WARN([Specified certificate authority file '$with_ca_certificates' does not exist])

@@ -1,30 +1,118 @@
-2.30.2
+2.32.3
+======
+  * proxy/gnome: Fix SOCKS to work when no http proxy is set
+
+  * Updated translations:
+	Greek
+
+2.32.1
+======
+  * gnutls: added /etc/ssl/ca-bundle.pem to the list of files to check
+    for to use as the default CA list. (This is what openSUSE uses.)
+    (#673944, Federico Mena Quintero)
+
+  * Updated translations:
+	Catalan (Valencian), Marathi, Odia, Persian
+
+2.32.0
+======
+  * New/updated translations:
+	Hindi, Japanese, Khmer, Latvian, Malayalam
+
+2.31.22
+=======
+  * Updated translations:
+	British English, Catalan, Finnish, Lithuanian, Portuguese,
+	Telugu
+
+2.31.20
+=======
+  * gnutls: Fixed a linking problem on some platforms when PKCS#11 is
+    enabled. (#670956, Kalev Lember)
+
+  * Updated translations:
+	Assamese, Basque, Belarusian, Brazilian Portuguese, Danish,
+	Estonian, French, German, Hungarian, Italian, Korean, Polish,
+	Russian, Serbian
+
+2.31.16
+=======
+  * gnutls: Fixed a TLS handshaking bug that in particular caused lots
+    of crashes in epiphany. (#658771)
+
+  * tls/tests: Fixed a bug in the pkcs11-pin test that could cause it
+    to spuriously fail
+
+  * Updated translations:
+	Bulgarian, Chinese (traditional), Czech, Japanese,
+	Norwegian bokmål, Turkish, Vietnamese
+
+2.31.6
 ======
   * gnutls
+	* Support gnutls built against nettle instead of gcrypt
+          (#657306)
+
+	* Implement TLS session caching for GTlsServerConnection
+          (#636574)
+
+  * tls/tests: Explicitly request the memory GSettings backend, to
+    avoid warnings in partial jhbuild environments
+
+  * proxy/gnome: Update to use GInetAddressMask
+
+  * Updated translations:
+	Chinese (simplified), Hebrew, Norwegian bokmål, Slovenian,
+	Swedish, Ukranian
+
+2.31.2
+======
+  * gnutls
+	* Added gnutls-pkcs11 backend, which uses gnutls 2.12.8 and
+	  p11-kit (a new optional dependency) to provide access to
+	  PKCS#11 tokens. At the moment, this is only enabled if you
+	  set GIO_USE_TLS=gnutls-pkcs11 in the environment. (Stef,
+	  #656361)
+
+	* GTlsCertificateGnutls can now read unencrypted PKCS#8 keys
+	  (which show "BEGIN PRIVATE KEY" in PEM form) in addition to
+	  the previously-supported PKCS#1 keys ("BEGIN RSA PRIVATE
+	  KEY").
+
+  * Updated translations:
+	Galician, German, Lithuanian, Norwegian bokmål, Spanish,
+	Turkish
+
+2.31.0
+======
+  * gnutls
+	* Bumped required GNUTLS version to 2.11.0 and updated
+	  code for that (Stef, #656903)
+
+	* Fixed a crash when passing a NULL GCancellable to
+	  g_tls_connection_close_async() (Dan, #659786) or a NULL
+	  GError to g_tls_file_database_new().
+
+	* Fixed handling of self-signed CA certificates in
+	  GTlsDatabaseGnutls (Dan, #660508)
+
 	* Added another G_TLS_ERROR_NOT_TLS (aka "dumb server, try
 	  falling back from TLS to SSLv3") case, when the handshake
 	  completes but then packets after that don't decrypt
 	  correctly. (Dan, #662104)
 
-	* Fixed a crash when passing a NULL GError to
-	  g_tls_file_database_new(). (Dan)
+	* Made sure that GTlsConnection:peer-certificate and
+          :peer-certificate-errors get set even when the peer
+          certificate is rejected. (Dan)
 
   * proxy/gnome
+	* Fixed ignore_hosts handling (Dan, #655581)
+
 	* Fixed configure check so that "--without-gnome-proxy" works.
 	  (Alexandre Rostovtsev, #662203)
 
 	* Fixed tests to only build the gnome proxy test if we're
 	  building the gnome proxy. (Kalev Lember, #662085)
-
-2.30.1
-======
-  * Fixed a crash when passing a NULL GCancellable to
-    g_tls_connection_close_async() (Dan, #659786)
-
-  * Fixed ignore_hosts handling in GProxyResolverGnome (Dan, #655581)
-
-  * Fixed handling of self-signed CA certificates in
-    GTlsDatabaseGnutls (Dan, #660508)
 
   * New translations:
 	Telugu

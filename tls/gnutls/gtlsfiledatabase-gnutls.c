@@ -1,6 +1,6 @@
 /* GIO - GLib Input, Output and Streaming Library
  *
- * Copyright © 2010 Collabora, Ltd
+ * Copyright 2010 Collabora, Ltd
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -13,9 +13,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+ * Public License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * Author: Stef Walter <stefw@collabora.co.uk>
  */
@@ -51,7 +50,7 @@ struct _GTlsFileDatabaseGnutlsPrivate
   gchar *anchor_filename;
 
   /* protected by mutex */
-  GMutex *mutex;
+  GMutex mutex;
 
   /*
    * These are hash tables of GByteArray -> GPtrArray<GByteArray>. The values of
@@ -306,7 +305,7 @@ g_tls_file_database_gnutls_finalize (GObject *object)
   g_free (self->priv->anchor_filename);
   self->priv->anchor_filename = NULL;
 
-  g_mutex_free (self->priv->mutex);
+  g_mutex_clear (&self->priv->mutex);
 
   G_OBJECT_CLASS (g_tls_file_database_gnutls_parent_class)->finalize (object);
 }
@@ -363,7 +362,7 @@ g_tls_file_database_gnutls_init (GTlsFileDatabaseGnutls *self)
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
                                             G_TYPE_TLS_FILE_DATABASE_GNUTLS,
                                             GTlsFileDatabaseGnutlsPrivate);
-  self->priv->mutex = g_mutex_new ();
+  g_mutex_init (&self->priv->mutex);
 }
 
 static gchar*
@@ -378,12 +377,12 @@ g_tls_file_database_gnutls_create_certificate_handle (GTlsDatabase            *d
   g_object_get (certificate, "certificate", &der, NULL);
   g_return_val_if_fail (der, FALSE);
 
-  g_mutex_lock (self->priv->mutex);
+  g_mutex_lock (&self->priv->mutex);
 
   /* At the same time look up whether this certificate is in list */
   contains = g_hash_table_lookup (self->priv->complete, der) ? TRUE : FALSE;
 
-  g_mutex_unlock (self->priv->mutex);
+  g_mutex_unlock (&self->priv->mutex);
 
   /* Certificate is in the database */
   if (contains)
@@ -411,7 +410,7 @@ g_tls_file_database_gnutls_lookup_certificate_for_handle (GTlsDatabase          
   if (!handle)
     return NULL;
 
-  g_mutex_lock (self->priv->mutex);
+  g_mutex_lock (&self->priv->mutex);
 
   /* Create the handles table if not already done */
   if (!self->priv->handles)
@@ -420,7 +419,7 @@ g_tls_file_database_gnutls_lookup_certificate_for_handle (GTlsDatabase          
 
     der = g_hash_table_lookup (self->priv->handles, handle);
 
-  g_mutex_unlock (self->priv->mutex);
+  g_mutex_unlock (&self->priv->mutex);
 
   if (der == NULL)
     return NULL;
@@ -462,9 +461,9 @@ g_tls_file_database_gnutls_lookup_assertion (GTlsDatabaseGnutls          *databa
   g_object_get (certificate, "certificate", &der, NULL);
   g_return_val_if_fail (der, FALSE);
 
-  g_mutex_lock (self->priv->mutex);
+  g_mutex_lock (&self->priv->mutex);
   contains = g_hash_table_lookup (self->priv->complete, der) ? TRUE : FALSE;
-  g_mutex_unlock (self->priv->mutex);
+  g_mutex_unlock (&self->priv->mutex);
 
   g_byte_array_unref (der);
 
@@ -513,9 +512,9 @@ g_tls_file_database_gnutls_lookup_certificate_issuer (GTlsDatabase           *da
   gnutls_free (dn.data);
 
   /* Find the full DER value of the certificate */
-  g_mutex_lock (self->priv->mutex);
+  g_mutex_lock (&self->priv->mutex);
   der = multi_byte_array_hash_lookup_one (self->priv->subjects, subject);
-  g_mutex_unlock (self->priv->mutex);
+  g_mutex_unlock (&self->priv->mutex);
 
   g_byte_array_unref (subject);
 
@@ -556,9 +555,9 @@ g_tls_file_database_gnutls_lookup_certificates_issued_by (GTlsDatabase          
     return NULL;
 
   /* Find the full DER value of the certificate */
-  g_mutex_lock (self->priv->mutex);
+  g_mutex_lock (&self->priv->mutex);
   ders = multi_byte_array_hash_lookup_all (self->priv->issuers, issuer_raw_dn);
-  g_mutex_unlock (self->priv->mutex);
+  g_mutex_unlock (&self->priv->mutex);
 
   for (i = 0; ders && i < ders->len; i++)
     {
@@ -635,7 +634,7 @@ g_tls_file_database_gnutls_initable_init (GInitable    *initable,
 
   if (result)
     {
-      g_mutex_lock (self->priv->mutex);
+      g_mutex_lock (&self->priv->mutex);
       if (!self->priv->subjects)
         {
           self->priv->subjects = subjects;
@@ -651,7 +650,7 @@ g_tls_file_database_gnutls_initable_init (GInitable    *initable,
           self->priv->complete = complete;
           complete = NULL;
         }
-      g_mutex_unlock (self->priv->mutex);
+      g_mutex_unlock (&self->priv->mutex);
     }
 
   if (subjects != NULL)

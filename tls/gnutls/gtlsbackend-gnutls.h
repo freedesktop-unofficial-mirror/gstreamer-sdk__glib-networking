@@ -1,6 +1,6 @@
-/* GIO - GLib Backend, Output and Gnutlsing Library
+/* GIO - GLib Input, Output and Streaming Library
  *
- * Copyright © 2010 Red Hat, Inc.
+ * Copyright 2010 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -32,6 +32,9 @@ typedef struct _GTlsBackendGnutlsPrivate GTlsBackendGnutlsPrivate;
 struct _GTlsBackendGnutlsClass
 {
   GObjectClass parent_class;
+
+  GTlsDatabase*   (*create_database)      (GTlsBackendGnutls          *self,
+                                           GError                    **error);
 };
 
 struct _GTlsBackendGnutls
@@ -43,11 +46,13 @@ struct _GTlsBackendGnutls
 GType g_tls_backend_gnutls_get_type (void) G_GNUC_CONST;
 void  g_tls_backend_gnutls_register (GIOModule *module);
 
-void         g_tls_backend_gnutls_cache_session_data        (const gchar *session_id,
-							     guchar      *session_data,
-							     gsize        session_data_length);
-void         g_tls_backend_gnutls_uncache_session_data      (const gchar *session_id);
-GByteArray  *g_tls_backend_gnutls_lookup_session_data       (const gchar *session_id);
+void    g_tls_backend_gnutls_store_session  (gnutls_connection_end_t  type,
+					     GBytes                  *session_id,
+					     GBytes                  *session_data);
+void    g_tls_backend_gnutls_remove_session (gnutls_connection_end_t  type,
+					     GBytes                  *session_id);
+GBytes *g_tls_backend_gnutls_lookup_session (gnutls_connection_end_t  type,
+					     GBytes                  *session_id);
 
 G_END_DECLS
 
