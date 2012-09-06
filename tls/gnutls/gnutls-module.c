@@ -24,9 +24,8 @@
 #include "gtlsbackend-gnutls.h"
 #include "gtlsbackend-gnutls-pkcs11.h"
 
-
-void
-g_io_module_load (GIOModule *module)
+static void
+_g_io_module_load (GIOModule *module)
 {
   g_tls_backend_gnutls_register (module);
 #ifdef HAVE_PKCS11
@@ -34,13 +33,13 @@ g_io_module_load (GIOModule *module)
 #endif
 }
 
-void
-g_io_module_unload (GIOModule *module)
+static void
+_g_io_module_unload (GIOModule *module)
 {
 }
 
-gchar **
-g_io_module_query (void)
+static gchar **
+_g_io_module_query (void)
 {
   gchar *eps[] = {
     G_TLS_BACKEND_EXTENSION_POINT_NAME,
@@ -48,3 +47,5 @@ g_io_module_query (void)
   };
   return g_strdupv (eps);
 }
+
+G_IO_MODULE_DEFINE(gnutls);

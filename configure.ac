@@ -231,6 +231,26 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
 		-Werror=declaration-after-statement"
 fi
 
+dnl ****************************************************
+dnl *** Check for GIO static modules                 ***
+dnl ****************************************************
+AC_MSG_CHECKING([whether to build static modules or not])
+AC_ARG_ENABLE(
+  static-modules,
+  AC_HELP_STRING(
+    [--enable-static-modules],
+    [build static modules @<:@default=no@:>@]),
+  [AS_CASE(
+    [$enableval], [no], [], [yes], [],
+    [AC_MSG_ERROR([bad value "$enableval" for --enable-static-modules])])],
+  [enable_static_modules=no])
+AC_MSG_RESULT([$enable_static_modules])
+if test "x$enable_static_modules" = xyes; then
+  AC_DEFINE(G_IO_MODULE_BUILD_STATIC, 1,
+    [Define if static modules should be built])
+fi
+AM_CONDITIONAL(G_IO_MODULE_BUILD_STATIC, [test "x$enable_static_modules" = "xyes"])
+
 dnl *****************************
 dnl *** done                  ***
 dnl *****************************

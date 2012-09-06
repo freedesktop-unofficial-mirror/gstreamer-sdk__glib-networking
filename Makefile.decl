@@ -2,7 +2,10 @@
 
 NULL =
 
-module_flags = -export_dynamic -avoid-version -module -no-undefined -export-symbols-regex '^g_io_module_(load|unload|query)'
+module_flags = -export_dynamic -avoid-version -module -no-undefined
+if !G_IO_MODULE_BUILD_STATIC
+module_flags += -export-symbols-regex '^g_io_module_(load|unload|query)'
+endif
 
 giomoduledir = $(GIO_MODULE_DIR)
 
