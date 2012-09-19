@@ -617,6 +617,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+G_IO_MODULE_BUILD_STATIC_FALSE
+G_IO_MODULE_BUILD_STATIC_TRUE
 LTP_GENHTML
 LTP
 HAVE_PKCS11_FALSE
@@ -831,6 +833,7 @@ with_ca_certificates
 with_pkcs11
 enable_gcov
 enable_more_warnings
+enable_static_modules
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1487,6 +1490,7 @@ Optional Features:
   --disable-glibtest      do not try to compile and run a test GLIB program
   --enable-gcov           Enable gcov
   --disable-more-warnings Inhibit compiler warnings
+  --enable-static-modules build static modules [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -14701,6 +14705,38 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
 		-Werror=declaration-after-statement"
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build static modules or not" >&5
+$as_echo_n "checking whether to build static modules or not... " >&6; }
+# Check whether --enable-static-modules was given.
+if test "${enable_static_modules+set}" = set; then :
+  enableval=$enable_static_modules; case $enableval in #(
+  no) :
+     ;; #(
+  yes) :
+     ;; #(
+  *) :
+    as_fn_error $? "bad value \"$enableval\" for --enable-static-modules" "$LINENO" 5 ;;
+esac
+else
+  enable_static_modules=no
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_static_modules" >&5
+$as_echo "$enable_static_modules" >&6; }
+if test "x$enable_static_modules" = xyes; then
+
+$as_echo "#define G_IO_MODULE_BUILD_STATIC 1" >>confdefs.h
+
+fi
+ if test "x$enable_static_modules" = "xyes"; then
+  G_IO_MODULE_BUILD_STATIC_TRUE=
+  G_IO_MODULE_BUILD_STATIC_FALSE='#'
+else
+  G_IO_MODULE_BUILD_STATIC_TRUE='#'
+  G_IO_MODULE_BUILD_STATIC_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files Makefile po/Makefile.in po/Makefile proxy/libproxy/Makefile proxy/gnome/Makefile proxy/tests/Makefile tls/gnutls/Makefile tls/pkcs11/Makefile tls/tests/Makefile"
 
 cat >confcache <<\_ACEOF
@@ -14854,6 +14890,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PKCS11_TRUE}" && test -z "${HAVE_PKCS11_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PKCS11\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${G_IO_MODULE_BUILD_STATIC_TRUE}" && test -z "${G_IO_MODULE_BUILD_STATIC_FALSE}"; then
+  as_fn_error $? "conditional \"G_IO_MODULE_BUILD_STATIC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -9,6 +9,9 @@
 /* The system TLS CA list */
 #undef GTLS_SYSTEM_CA_FILE
 
+/* Define if static modules should be built */
+#undef G_IO_MODULE_BUILD_STATIC
+
 /* Define to 1 if you have the `bind_textdomain_codeset' function. */
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 

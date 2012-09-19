@@ -40,10 +40,11 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/Makefile.decl $(top_srcdir)/configure AUTHORS \
 	COPYING ChangeLog INSTALL NEWS compile config.guess config.sub \
 	depcomp install-sh ltmain.sh missing
-@HAVE_LIBPROXY_TRUE@am__append_1 = proxy/libproxy
-@HAVE_GNOME_PROXY_TRUE@am__append_2 = proxy/gnome
-@HAVE_PKCS11_TRUE@am__append_3 = tls/pkcs11
-@HAVE_GNUTLS_TRUE@am__append_4 = tls/gnutls
+@G_IO_MODULE_BUILD_STATIC_FALSE@am__append_1 = -export-symbols-regex '^g_io_module_(load|unload|query)'
+@HAVE_LIBPROXY_TRUE@am__append_2 = proxy/libproxy
+@HAVE_GNOME_PROXY_TRUE@am__append_3 = proxy/gnome
+@HAVE_PKCS11_TRUE@am__append_4 = tls/pkcs11
+@HAVE_GNUTLS_TRUE@am__append_5 = tls/gnutls
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -285,7 +286,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 NULL = 
-module_flags = -export_dynamic -avoid-version -module -no-undefined -export-symbols-regex '^g_io_module_(load|unload|query)'
+module_flags = -export_dynamic -avoid-version -module -no-undefined \
+	$(am__append_1)
 giomoduledir = $(GIO_MODULE_DIR)
 INCLUDES = \
 	-DG_LOG_DOMAIN=\"GLib-Net\"	\
@@ -302,8 +304,8 @@ GTESTER_REPORT = gtester-report		# for the GLIB package
 EXTRA_DIST = 
 TEST_PROGS = 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
-SUBDIRS = po $(am__append_1) $(am__append_2) proxy/tests \
-	$(am__append_3) $(am__append_4) tls/tests
+SUBDIRS = po $(am__append_2) $(am__append_3) proxy/tests \
+	$(am__append_4) $(am__append_5) tls/tests
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

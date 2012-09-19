@@ -38,8 +38,9 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl
+@G_IO_MODULE_BUILD_STATIC_FALSE@am__append_1 = -export-symbols-regex '^g_io_module_(load|unload|query)'
 noinst_PROGRAMS = $(am__EXEEXT_2)
-@HAVE_GNOME_PROXY_TRUE@am__append_1 = gnome
+@HAVE_GNOME_PROXY_TRUE@am__append_2 = gnome
 subdir = proxy/tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -257,7 +258,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 NULL = 
-module_flags = -export_dynamic -avoid-version -module -no-undefined -export-symbols-regex '^g_io_module_(load|unload|query)'
+module_flags = -export_dynamic -avoid-version -module -no-undefined \
+	$(am__append_1)
 giomoduledir = $(GIO_MODULE_DIR)
 INCLUDES = -DG_LOG_DOMAIN=\"GLib-Net\" -DG_DISABLE_DEPRECATED \
 	$(GLIB_CFLAGS) $(NULL) $(GSETTINGS_DESKTOP_SCHEMAS_CFLAGS) \
@@ -270,7 +272,7 @@ GTESTER_REPORT = gtester-report		# for the GLIB package
 
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
-TEST_PROGS = $(am__append_1)
+TEST_PROGS = $(am__append_2)
 LDADD = \
 	$(GLIB_LIBS)
 
