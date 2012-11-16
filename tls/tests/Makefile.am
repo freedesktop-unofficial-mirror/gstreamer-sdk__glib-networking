@@ -2,6 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 INCLUDES +=					\
 	-I$(top_srcdir)/tls			\
+	-I$(top_builddir)/tls			\
 	-DSRCDIR=\""$(abs_srcdir)"\"		\
 	-DTOP_BUILDDIR=\""$(top_builddir)"\"
 
@@ -12,6 +13,7 @@ LDADD  = \
 
 TEST_PROGS +=         \
 	certificate   \
+	file-database \
 	connection    \
 	$(NULL)
 
