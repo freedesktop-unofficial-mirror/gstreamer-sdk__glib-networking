@@ -559,3 +559,14 @@ g_tls_certificate_gnutls_set_issuer (GTlsCertificateGnutls *gnutls,
   gnutls->priv->issuer = issuer;
   g_object_notify (G_OBJECT (gnutls), "issuer");
 }
+
+GBytes *
+g_tls_certificate_gnutls_get_bytes (GTlsCertificateGnutls *gnutls)
+{
+  GByteArray *array;
+
+  g_return_val_if_fail (G_IS_TLS_CERTIFICATE_GNUTLS (gnutls), NULL);
+
+  g_object_get (gnutls, "certificate", &array, NULL);
+  return g_byte_array_free_to_bytes (array);
+}
